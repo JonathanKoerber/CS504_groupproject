@@ -1,16 +1,30 @@
+from sqlalchemy import create_engine, text
 from flask import Blueprint, request, jsonify
-from flask_login import current_user, login_user, logout_user, login_required   
-from api.data_model import User
 
 
 users = Blueprint('users', __name__)
 
-
-@users.route('/login', methods=['POST'])
+@users.route('/login', methods=['GET'])
 def login():
-    request = request.get_json()
-    email = request.get('email')
-    password = request.get('password')
+    
+    re = request.get_json()
+    username = re['username']
+    password = re['password']
+    try:
+        # utils.validate_string(username)
+        # utils.validate_string(password)
+        engine = create_engine('mysql+mysqlconnector://root:root@localhost:3306/dbe')
+        query = text("SELECT * FROM users WHERE username = :username AND password = :password ")
+    
+        with engine.connect() as con:
+            rs = con.execute(query, {"username": username, "password": password})
+        if rs.fetchone() is not None:
+            print("Login successful!")
+        else:
+            print("Invalid username or password!")
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    return jsonify({'username': username, 'password': password}), 200
 
 @users.route('/')
 def index():
