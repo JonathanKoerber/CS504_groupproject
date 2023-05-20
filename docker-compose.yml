@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  flask_api:
+    container_name: flask_api
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./test:/home
+    depends_on:
+      - mysql_db
+    
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./storage/mysql_db:/var/lib/mysql
+
+  adminer:
+    image: adminer
+    container_name: adminer-instance
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql_db
