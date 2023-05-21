@@ -1,5 +1,5 @@
 # Description: This file contains the data model for the database.
-from api import db, login_manager
+from api import db
 from datetime import datetime
 from flask_login import UserMixin
 from flask_authorize import RestrictionsMixin, AllowancesMixin, PermissionsMixin, OwnerPermissionsMixin
@@ -10,9 +10,9 @@ from flask import current_app
 import jwt
 
 class User(db.Model, UserMixin):
-    __tablename__='user'
+    __tablename__='users'
     
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False, unique=True)
     password = db.Column(db.String(120), nullable=False)
@@ -45,9 +45,14 @@ class User(db.Model, UserMixin):
         self.confirmed = True
         db.session.add(self)
         return True
-        
 
-
-
+    '''return a json object of the user data'''
+    def to_json(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'password': self.password,
+            'email': self.email
+        }
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}', '{self.image_file}')"
+        return f"User('{self.username}', '{self.email}', '{self.password}')"

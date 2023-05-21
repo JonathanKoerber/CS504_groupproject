@@ -16,12 +16,16 @@ def salt_password(password):
             password_array.append('#!')
     return ''.join(password_array)
 
-
-def validate_string(string):
-        if len(string) <= 255:
+def validate_name(string):
+    if len(string) <= 255:
+        return True
+    else:
+        raise ValueError("username and password shoult not exceet 255 characters")
+def validate_passowrd(string):
+        if len(string) <= 255 and len(string) >= 6:
             return True
         else:
-            raise ValueError("username and password shoult not exceet 255 characters")
+            raise ValueError("username and password shoult not exceet 255 characters and be longer then 8")
 
 pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' 
 def validate_email(email):
