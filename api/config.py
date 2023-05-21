@@ -5,7 +5,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
     SECRET_KEY = secrets.token_hex(16)
-    SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://root:root@localhost:3306/dbe"
+    SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://root:root@localhost:3306/CS_504_PROJECT"
     SQLALCHEMY_DATABASE_PASSWORD ="root"
 
 

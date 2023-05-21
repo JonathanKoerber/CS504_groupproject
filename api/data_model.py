@@ -1,5 +1,5 @@
 # Description: This file contains the data model for the database.
-from api import db, login_manager
+from api import db #, login_manager
 from datetime import datetime
 from flask_login import UserMixin
 from flask_authorize import RestrictionsMixin, AllowancesMixin, PermissionsMixin, OwnerPermissionsMixin
@@ -12,11 +12,28 @@ import jwt
 class User(db.Model, UserMixin):
     __tablename__='user'
     
-    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False, unique=True)
     password = db.Column(db.String(120), nullable=False)
-    
+    phone_number = db.Column(db.String(120), nullable=False)
+
+
+    def __init__(self, user_id, username, email, password, phone_number):
+        """
+        constructs and initializes the users database class.
+        :param user_id:
+        :param username:
+        :param email:
+        :param password:
+        :param phone_number:
+        """
+        self.user_id = user_id
+        self.username = username
+        self.email = email
+        self.password = password
+        self.phone_number = phone_number
+
 
     def get_reset_token(self, expires_sec=1800):
         s = jwt.encode(
