@@ -1,8 +1,10 @@
 # Description: This file contains the data model for the database.
 from api import db
+import base64
 from datetime import datetime
 from flask_login import UserMixin
 from flask_authorize import RestrictionsMixin, AllowancesMixin, PermissionsMixin, OwnerPermissionsMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 import secrets
 import os
@@ -15,16 +17,32 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False, unique=True)
-    password = db.Column(db.String(120), nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
     
+    otp_secret = db.Column(db.String(16), nullable=False, default=secrets.token_hex(16))
 
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if self.otp_secret is None:
+            self.otp_secret = base64.b32encode(os.urandom(10))
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+    
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+    
     def get_reset_token(self, expires_sec=1800):
         s = jwt.encode(
             {
             "confirm": self.id, 
             "exp": datetime.utcnow() + datetime.timedelta(seconds=expires_sec)
             },
-            current_app.config['SECRET_KEY'],
+            self.otp_secret,
             algorithm='HS256'
         )
         return s.dumps({'user_id': self.id}).decode('utf-8')
@@ -34,7 +52,7 @@ class User(db.Model, UserMixin):
         try:
             data = jwt.decode(
                 token,
-                current_app.config['SECRET_KEY'],
+                self.otp_secret,
                 leeway=datetime.timedelta(seconds=10),
                 algorithms=["HS256"]
             )
@@ -55,4 +73,4 @@ class User(db.Model, UserMixin):
             'email': self.email
         }
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}', '{self.password}')"
+        return f"User('{self.username}', '{self.email}')"

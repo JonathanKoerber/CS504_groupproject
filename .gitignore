@@ -70,3 +70,9 @@ orange_it/static/profile_pics/*
 
 # test file that gets created when run docker compose
 /test/*
+# environ file var
+.env
+
+/docker-data
+
+/report

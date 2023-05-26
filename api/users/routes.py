@@ -1,9 +1,12 @@
 import sqlalchemy
 from sqlalchemy import create_engine, text
 from flask import Blueprint, request, jsonify
-from api.users.utils import validate_name, validate_passowrd, validate_email, salt_password
-from api import db
+from flask_mail import Message, Mail
+from api.users.utils import validate_name, validate_passowrd, validate_email, send_pin_email
+from api import db, mail
 from api.data_model import User
+from api.users.mfa import request_verification_token, check_verification_token
+import os
 
 users = Blueprint('users', __name__)
 
@@ -21,34 +24,59 @@ def index():
             users[row[0]] = [i for i in row[1:]]
     return jsonify(users), 200
 '''
-Authenticate user
+Authenticate user return pin and sent email for verification
 '''
 @users.route('/login', methods=['GET'])
 def login():
     rsp = request.get_json()
     username = rsp['username']
     password = rsp['password'] 
+    mfa_method = rsp['mfa_method']
+    print(username, password , mfa_method  )   
     try:
         validate_name(username)
         validate_passowrd(password)
 
-        engine  = db.get_engine()
-        query = text("SELECT * FROM users WHERE username = :username AND password = :password ")
-    
-        with engine.connect() as con:
-            rs = con.execute(query, {"username": username, "password": password})
-        if rs.fetchone() is not None:
-            print("Login successful!")
+        user = User.query.filter_by(username=username).first()
+        print('user: ', user)
+        #if user is not None and validate_passowrd(user.password):
+        if user is not None and user.verify_password(password):
+            phone_number = os.environ.get('PHONE_NUMBER')
+            request_verification_token(phone_number)
         else:
-            print("Invalid username or password!")
+            return jsonify({"error":"Invalid username or password!"}), 400
     except ValueError as e:
         print(e)
         return jsonify({"error": str(e)}), 400
-    return jsonify({'username': username, 'password': password}), 200
-
+    return jsonify({'message': 'Please check you {}'.format(mfa_method), 'id': user.id}), 200
 
 '''
-Add user to databasefl
+verify user pin and token
+TODO need a way to verify the pin
+maybe a temporary storage for the pin
+'''
+@users.route('/login_mfa', methods=['GET'])
+def login_mfa():
+    rsp = request.get_json()
+    pin = rsp['pin']
+    username = rsp['username']
+    
+    user = User.query.filter_by(username=username).first()
+
+    try:
+        mfa_rsp = check_verification_token(os.environ.get('PHONE_NUMBER'), pin)
+        
+    except ValueError as e:
+        print('error check verification token', e)
+        return jsonify({"error": str(e)}), 400
+    print('mfa_rsp: ', mfa_rsp.status)
+    if mfa_rsp == 'approved':
+        return jsonify({'message': 'Login successful', 'id': user.id, 'user': username}), 200
+    if mfa_rsp == 'pending' or mfa_rsp == 'denied':
+        return jsonify({'message': 'Login pin verification failed please try to renter you pin'}), 400
+    return jsonify({'message': 'Login pin verification failed try to login again'}), 400
+'''
+Add user to database
 '''
 @users.route('/users', methods=['POST'])
 def post_users_details():
