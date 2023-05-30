@@ -14,19 +14,20 @@ CREATE TABLE IF NOT EXISTS users (
             id int NOT NULL PRIMARY KEY AUTO_INCREMENT,
             username varchar(255) NOT NULL UNIQUE,
             email varchar(255),
+            phone_number varchar(20),
             password_hash varchar(255),
             otp_secret varchar(16)
             );
 
-insert into users(id, username, email, password_hash)
-            values(1, "John", 'john@zyx.com', 'password');
-insert into users(id, username, email, password_hash)
-            values(2, "Tom", 'topm@zyx.com', 'password');
-insert into users(id, username, email, password_hash)
-            values(3, "Edna", 'edna@zyx.com', 'password');
-insert into users(id, username, email, password_hash)
-            values(4, "Mike", 'mike@zyx.com', 'password');
-insert into users(id, username, email, password_hash)
-            values(5, "Jill", 'jill@zyx.com', 'password');
+insert into users(id, username, email, phone_number, password_hash)
+            values(1, "John", 'john@zyx.com', '1234567890', 'password');
+insert into users(id, username, email, phone_number, password_hash)
+            values(2, "Tom", 'topm@zyx.com', '1234567890','password');
+insert into users(id, username, email, phone_number, password_hash)
+            values(3, "Edna", 'edna@zyx.com', '1234567890', 'password');
+insert into users(id, username, email, phone_number, password_hash)
+            values(4, "Mike", 'mike@zyx.com', '1234567890','password');
+insert into users(id, username, email, phone_number, password_hash)
+            values(5, "Jill", 'jill@zyx.com', '1234567890','password');
         
 select * from users;
