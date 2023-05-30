@@ -1,4 +1,5 @@
 
+
 # Flask API Project for CS_504 
 
 ## Software Engeineering 
@@ -47,3 +48,4 @@ EMAIL_ACC = ''
 MAIL_PASSWORD = ''
 PHONE_NUMBER = ''
 ```
+

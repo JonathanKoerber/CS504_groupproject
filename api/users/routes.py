@@ -8,6 +8,7 @@ from api.data_model import User
 from api.users.mfa import request_verification_token, check_verification_token
 import os
 
+
 users = Blueprint('users', __name__)
 
 '''
@@ -50,6 +51,7 @@ def login():
         return jsonify({"error": str(e)}), 400
     return jsonify({'message': 'Please check you {}'.format(mfa_method), 'id': user.id}), 200
 
+
 '''
 verify user pin and token
 TODO need a way to verify the pin
@@ -75,6 +77,7 @@ def login_mfa():
     if mfa_rsp == 'pending' or mfa_rsp == 'denied':
         return jsonify({'message': 'Login pin verification failed please try to renter you pin'}), 400
     return jsonify({'message': 'Login pin verification failed try to login again'}), 400
+  
 '''
 Add user to database
 '''
@@ -166,4 +169,3 @@ def delete_users():
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 400
-

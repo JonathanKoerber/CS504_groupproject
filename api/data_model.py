@@ -1,4 +1,5 @@
 # Description: This file contains the data model for the database.
+
 from api import db
 import base64
 from datetime import datetime
@@ -14,12 +15,14 @@ import jwt
 class User(db.Model, UserMixin):
     __tablename__='users'
     
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False, unique=True)
     password_hash = db.Column(db.String(120), nullable=False)
     
     otp_secret = db.Column(db.String(16), nullable=False, default=secrets.token_hex(16))
+
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)

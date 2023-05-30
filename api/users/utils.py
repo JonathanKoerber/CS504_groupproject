@@ -1,13 +1,18 @@
 '''
 This will have the functions that will be use to send the 
-multiathentication email to the user
+multi-authentication email to the user.
+the user will simultaneously receive a text message and an email
+bearing the same 4 digit pin that will be randomly generated.
 '''
+
 
 from flask_mail import Message
 import random
 import re
 import os
 from api import mail
+
+
 
 def salt_password(password):
     # for every 2 characters, insert #!
@@ -25,20 +30,29 @@ def validate_name(string):
         return True
     else:
         raise ValueError("username and password shoult not exceet 255 characters")
+        
 def validate_passowrd(string):
         if len(string) <= 255 and len(string) >= 6:
             return True
         else:
             raise ValueError("username and password shoult not exceet 255 characters and be longer then 8")
 
-pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' 
+
 def validate_email(email):
-    
+    """
+    The local part and the domain name can contain one or more dots,
+    no two dots can appear consecutively the first and last characters
+    in the local part and in the domain name should not be dots.
+    :param email:
+    :return: True if the email meets the standards of an approved email address.
+    """
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     match = re.match(pattern, email)
     if match:
         return True
     else:
         raise ValueError("Invalid email address!")
+
 
     
 def send_pin_email(user):
