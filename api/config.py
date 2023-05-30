@@ -7,6 +7,7 @@ class Config(object):
     TESTING = False
     SECRET_KEY = secrets.token_hex(16)
 
+
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_DATABASE_PASSWORD ="root"
     TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
