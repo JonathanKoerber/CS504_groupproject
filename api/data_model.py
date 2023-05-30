@@ -1,8 +1,11 @@
 # Description: This file contains the data model for the database.
-from api import db #, login_manager
+
+from api import db
+import base64
 from datetime import datetime
 from flask_login import UserMixin
 from flask_authorize import RestrictionsMixin, AllowancesMixin, PermissionsMixin, OwnerPermissionsMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 import secrets
 import os
@@ -10,38 +13,39 @@ from flask import current_app
 import jwt
 
 class User(db.Model, UserMixin):
-    __tablename__='user'
+    __tablename__='users'
     
-    user_id = db.Column(db.Integer, primary_key=True)
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False, unique=True)
-    password = db.Column(db.String(120), nullable=False)
-    phone_number = db.Column(db.String(120), nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
+    
+    otp_secret = db.Column(db.String(16), nullable=False, default=secrets.token_hex(16))
 
 
-    def __init__(self, user_id, username, email, password, phone_number):
-        """
-        constructs and initializes the users database class.
-        :param user_id:
-        :param username:
-        :param email:
-        :param password:
-        :param phone_number:
-        """
-        self.user_id = user_id
-        self.username = username
-        self.email = email
-        self.password = password
-        self.phone_number = phone_number
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if self.otp_secret is None:
+            self.otp_secret = base64.b32encode(os.urandom(10))
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+    
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+    
     def get_reset_token(self, expires_sec=1800):
         s = jwt.encode(
             {
             "confirm": self.id, 
             "exp": datetime.utcnow() + datetime.timedelta(seconds=expires_sec)
             },
-            current_app.config['SECRET_KEY'],
+            self.otp_secret,
             algorithm='HS256'
         )
         return s.dumps({'user_id': self.id}).decode('utf-8')
@@ -51,7 +55,7 @@ class User(db.Model, UserMixin):
         try:
             data = jwt.decode(
                 token,
-                current_app.config['SECRET_KEY'],
+                self.otp_secret,
                 leeway=datetime.timedelta(seconds=10),
                 algorithms=["HS256"]
             )
@@ -62,9 +66,14 @@ class User(db.Model, UserMixin):
         self.confirmed = True
         db.session.add(self)
         return True
-        
 
-
-
+    '''return a json object of the user data'''
+    def to_json(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'password': self.password,
+            'email': self.email
+        }
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}', '{self.image_file}')"
+        return f"User('{self.username}', '{self.email}')"
