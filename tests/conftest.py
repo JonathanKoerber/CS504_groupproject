@@ -1,6 +1,7 @@
 import pytest
 from  api import create_app, db
 from  api.config import TestingConfig
+from flask_sqlalchemy import SQLAlchemy
 
 
 @pytest.fixture(scope="module")
@@ -14,22 +15,17 @@ def test_client():
 
 @pytest.fixture
 def test_app():
-    app = create_app()
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    db.create_all(app=app)
-    yield app
-    db.drop_all(app=app)
+    app = create_app(TestingConfig)
+    
+    #os.environ['CONFIG_TYPE'] = 'config.TestingConfig'
+    with app.test_client() as test_client:
+        with app.app_context():
+            yield test_client, db
 
 @pytest.fixture
 def client(app):
     return app.test_client()
 
-@pytest.fixture(scope="module")
-def init_database():
-    db.create_all()
-    yield db
-    db.drop_all()
 
 @pytest.fixture(scope="module")
 def users_fixture():

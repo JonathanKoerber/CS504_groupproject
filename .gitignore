@@ -76,3 +76,5 @@ orange_it/static/profile_pics/*
 /docker-data
 
 /report
+
+/instance/*
