@@ -78,3 +78,4 @@ orange_it/static/profile_pics/*
 /report
 
 /instance/*
+ .vscode/*

@@ -2,7 +2,7 @@
 This will have the functions that will be use to send the 
 multiathentication email to the user
 """
-
+from api.data_model import User
 from flask_mail import Message
 import random
 import re
@@ -23,10 +23,12 @@ def salt_password(password):
 
 
 def validate_name(string):
+    if User.query.filter_by(username=string).first():
+        raise ValueError("Username already exists!")
     if len(string) <= 255:
         return True
     else:
-        raise ValueError("username and password shoult not exceet 255 characters")
+        raise ValueError("username should not exceet 255 characters")
 
 
 def validate_passowrd(string):
@@ -54,7 +56,7 @@ def validate_phone_number(phone_number):
     if match:
         return True
     else:
-        raise ValueError("Invalid phone number!")
+        raise ValueError("Invalid phone number! Valid format: 1 (555) 555-5555")
 
 
 # def send_pin_email(user):
@@ -62,7 +64,8 @@ def validate_phone_number(phone_number):
 #     msg = Message(
 #         "Password Reset Request", sender="noreply@gmail.com", recipients=user.email
 #     )
-#     msg.body = """Hi there {user.username},  \n Use the pin to login to your account \n
+#    
+#  msg.body = """Hi there {user.username},  \n Use the pin to login to your account \n
 #                     {pin}
 #         If you did not make this request than you can simply ignore this email and no change will be made. 
 #         """
