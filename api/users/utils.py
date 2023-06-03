@@ -1,12 +1,15 @@
 """
-This will have the functions that will be use to send the 
-multiathentication email to the user
+multi-authentication email to the user.
+the user will simultaneously receive a text message and an email
+bearing the same 4 digit pin that will be randomly generated.
 """
-from api.data_model import User
+
 from flask_mail import Message
 import random
 import re
 import os
+
+
 
 
 
@@ -28,20 +31,24 @@ def validate_name(string):
     if len(string) <= 255:
         return True
     else:
-        raise ValueError("username should not exceet 255 characters")
-
-
+        raise ValueError("username and password shoult not exceed 255 characters")
+    
 def validate_passowrd(string):
-    if len(string) <= 255 and len(string) >= 6:
-        return True
-    else:
-        raise ValueError(
-            "username and password shoult not exceet 255 characters and be longer then 8"
-        )
+        if len(string) <= 255 and len(string) >= 6:
+            return True
+        else:
+            raise ValueError("username and password shoult not exceet 255 characters and be longer then 8")
 
 
 def validate_email(email):
-    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    """
+    The local part and the domain name can contain one or more dots,
+    no two dots can appear consecutively the first and last characters
+    in the local part and in the domain name should not be dots.
+    :param email:
+    :return: True if the email meets the standards of an approved email address.
+    """
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     match = re.match(pattern, email)
     if match:
         return True
@@ -49,26 +56,15 @@ def validate_email(email):
         raise ValueError("Invalid email address!")
 
 
-def validate_phone_number(phone_number):
-    """validate phone number 1 (555) 555-5555"""
-    pattern = r"^\d{1}\s\(\d{3}\)\s\d{3}-\d{4}$"
-    match = re.match(pattern, phone_number)
-    if match:
-        return True
-    else:
-        raise ValueError("Invalid phone number! Valid format: 1 (555) 555-5555")
-
-
+    
 # def send_pin_email(user):
+    
 #     pin = random.randint(1000, 9999)
-#     msg = Message(
-#         "Password Reset Request", sender="noreply@gmail.com", recipients=user.email
-#     )
-#    
-#  msg.body = """Hi there {user.username},  \n Use the pin to login to your account \n
+#     msg = Message('Password Reset Request', sender='noreply@gmail.com', recipients=user.email)
+#     msg.body ='''Hi there {user.username},  \n Use the pin to login to your account \n
 #                     {pin}
 #         If you did not make this request than you can simply ignore this email and no change will be made. 
-#         """
+#         '''
 #     for v, i in enumerate(msg.body):
 #         pass
 #     mail.send(message=msg)
