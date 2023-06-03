@@ -2,23 +2,47 @@ import pytest
 from  api import create_app, db
 from  api.config import TestingConfig
 from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
+from api.users.routes import users
 
 
 @pytest.fixture(scope="module")
 def context():
     flask_app = create_app(TestingConfig)
+    db.create_all()
     testing_client = flask_app.test_client()
     ctx = flask_app.app_context()
     ctx.push()
     yield ctx
     ctx.pop()
+    db.drop_all()
 
 @pytest.fixture
 def test_app():
     app = create_app(TestingConfig)
+    db.create_all()
     with app.test_client() as test_client:
         with app.app_context():
             yield test_client, db
+            db.drop_all()
+
+@pytest.fixture(scope="module")
+def test_client():
+    app = create_app(TestingConfig)
+    with app.app_context():
+        client = app.test_client()
+        db.create_all()
+        yield client
+        db.drop_all()
+# def test_client():
+    # app = create_app(TestingConfig)
+    # client = app.test_client()
+    # ctx = app.test_request_context()
+    # db.create_all()
+    # ctx.push()
+    # yield client
+    # ctx.pop()
+    # db.drop_all()
 
 @pytest.fixture
 def client(app):
@@ -158,3 +182,104 @@ def name_value_error_fixture():
         },
     }
     return names
+
+@pytest.fixture(scope="module")
+def get_response_fixture():
+    rec = {
+        "success": {
+            "route": "/",
+            "status_code": 200,
+            "request_body": {}, 
+            "expected_response": {},
+            "verb": "GET"
+        }
+    }
+    return rec
+@pytest.fixture(scope="module")
+def users_to_load():
+    data = [
+    {
+        "username": "test user one",
+        "password": "password",
+        "phone_number": "1 (234) 567-1890",
+        "email": "one@e.mail"
+        },
+        {
+        "username": "test user two",
+        "password": "password",
+        "phone_number": "1 (234) 567-1890",
+        "email": "two@ma.il"
+        },
+        {
+        "username": "test user three",
+        "password": "password",
+        "phone_number": "1 (234) 567-1890",
+        "email": "three@ma.il"
+        }
+    ]
+    return data
+
+@pytest.fixture(scope="module")
+def username_password():
+    data = {
+    "wrong_password":{
+        "body": {
+            "username": "test user one",
+            "password": "wrong_password",
+            "mfa_method": "sms"
+        },
+        "status_code": 400 
+        },
+    "wrong_username":{
+        "body":{
+            "username": "wrong username",
+            "password": "password",
+            "mfa_method": "sms"
+        },
+        "status_code": 400
+        },
+        "success":{
+        "body":{
+            "username": "test user one",
+            "password": "password",
+            "mfa_method": "sms"
+            },
+        "status_code": 200
+    },
+    }
+    return data
+
+@pytest.fixture(scope="module")
+def update_user_fixture():
+     data ={
+         "user1": {
+        "username": "user",
+        "password": "password",
+        "phone_number": "1 (234) 567-1890",
+        "email": "one@e.mail"
+            },
+        "user2": {
+        "username": "test",
+        "password": "new_password",
+        "phone_number": "1 (555) 567-1890",
+        "email": "twsdfso@ma.il"
+        }
+     }
+     return data
+@pytest.fixture(scope="module")
+def delete_user_fixture():
+    data ={
+        "user1": {
+        "username": "user delete",
+        "password": "password",
+        "phone_number": "1 (234) 567-1890",
+        "email": "enm@mail.com"
+            },
+        "user2": {
+        "username": "test delete", 
+        "password": "new_password", 
+        "phone_number": "1 (555) 567-1890",
+        "email": "email@mail.com"
+        }
+    }   
+    return data

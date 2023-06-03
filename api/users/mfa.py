@@ -26,4 +26,5 @@ def check_verification_token(phone_number, token):
             to=phone_number, code=token
         )
     except Exception as e:
+        print("error check verification token", e)
         return e

@@ -21,13 +21,8 @@ Display all users
 
 @users.route("/")
 def index():
-    users = {}
-    query = text("SELECT * FROM users")
-    engine = db.get_engine()
-    with engine.connect() as con:
-        rs = con.execute(query)
-        for row in rs:
-            users[row[0]] = [i for i in row[1:]]
+    users = User.query.all()
+    users = [user.to_dict() for user in users]  # convert to dict
     return jsonify(users), 200
 
 
@@ -37,19 +32,21 @@ def login():
     Authenticate user return pin and sent email for verification
     """
     rsp = request.get_json()
+    print('login', rsp)
     username = rsp["username"]
     password = rsp["password"]
     mfa_method = rsp["mfa_method"]
-    print(username, password, mfa_method)
+  
     try:
-        validate_name(username)
+        #
         validate_passowrd(password)
 
         user = User.query.filter_by(username=username).first()
-        print("user: ", user)
+        
         # if user is not None and validate_passowrd(user.password):
         if user is not None and user.verify_password(password):
-            phone_number = os.environ.get("PHONE_NUMBER")
+            print("user: ", user, user.verify_password(password))
+            phone_number = user.phone_number
             request_verification_token(phone_number)
         else:
             return jsonify({"error": "Invalid username or password!"}), 400
@@ -76,13 +73,14 @@ def login_mfa():
     username = rsp["username"]
 
     user = User.query.filter_by(username=username).first()
-
+    print("user: ", user)
     try:
-        mfa_rsp = check_verification_token(os.environ.get("PHONE_NUMBER"), pin)
+        mfa_rsp = check_verification_token(user.phone_number, pin)
 
     except ValueError as e:
         print("error check verification token", e)
         return jsonify({"error": str(e)}), 400
+    print("mfa_rsp: ", mfa_rsp)
     print("mfa_rsp: ", mfa_rsp.status)
     if mfa_rsp == "approved":
         return (
@@ -116,7 +114,6 @@ def post_users_details():
     try:
         user = User.query.filter_by(username=username).first()
         if user:
-            print("user not null")
             raise ValueError("User already exists")
         validate_name(username)
         validate_passowrd(password)
@@ -125,8 +122,8 @@ def post_users_details():
         user = User(username=username, password=password, email=email, phone_number=phone_number)
         db.session.add(user)
         db.session.commit()
-        return user.to_json(), 200
-
+        
+        return jsonify(user.to_dict()), 200
     except ValueError as e:
         print(e)
         return jsonify({"error": str(e)}), 400
@@ -169,6 +166,7 @@ def put_users_by_id_details():
         db.session.add(user)
         db.session.commit()
         update_user = User.query.filter_by(id=id).first()
+        print("update_user: ", update_user)
         return update_user.to_json(), 200
     except Exception as e:
         print("Error during saving object ", e)

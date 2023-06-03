@@ -43,7 +43,7 @@ def test_invalid_phone_number_raise_error(phone_number, phone_value_error_fixtur
   
 
 @pytest.mark.parametrize('name', ['success'])
-def test_validate_name(name, name_fixture, context):
+def test_validate_name(name, name_fixture, test_client):
     """
     GIVEN a valid phone number
     WHEN the validate_phone_number function is called
@@ -52,14 +52,14 @@ def test_validate_name(name, name_fixture, context):
     """
     
     data = name_fixture[name]
-    with context:
+    with test_client.application.app_context():
         with patch ('api.data_model.User.query') as mock_query:
             mock_query.filter_by.return_value.first.return_value = data['db_return']
             assert validate_name(data['name']) is data['result']
 
 @pytest.mark.xfail(raises=ValueError)
 @pytest.mark.parametrize('name', ['name_exists', 'name_too_long'])
-def test_validate_name_raise_error(name, name_value_error_fixture, context):
+def test_validate_name_raise_error(name, name_value_error_fixture, test_client):
     """
     GIVEN a valid phone number
     WHEN the validate_phone_number function is called
@@ -68,7 +68,7 @@ def test_validate_name_raise_error(name, name_value_error_fixture, context):
     """
     
     data = name_value_error_fixture[name]
-    with context:
+    with test_client.application.app_context():
         with patch ('api.data_model.User.query') as mock_query:
             mock_query.filter_by.return_value.first.return_value = data['db_return']
             validate_name(data['name'])
