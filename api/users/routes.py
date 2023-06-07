@@ -5,7 +5,7 @@ from api.users.utils import (
     validate_name,
     validate_passowrd,
     validate_email,
-    validate_phone_number
+    validate_phone_number,
 )
 from api import db
 from api.data_model import User
@@ -32,17 +32,17 @@ def login():
     Authenticate user return pin and sent email for verification
     """
     rsp = request.get_json()
-    print('login', rsp)
+    print("login", rsp)
     username = rsp["username"]
     password = rsp["password"]
     mfa_method = rsp["mfa_method"]
-  
+
     try:
         #
         validate_passowrd(password)
 
         user = User.query.filter_by(username=username).first()
-        
+
         # if user is not None and validate_passowrd(user.password):
         if user is not None and user.verify_password(password):
             print("user: ", user, user.verify_password(password))
@@ -119,10 +119,12 @@ def post_users_details():
         validate_passowrd(password)
         validate_email(email)
         validate_phone_number(phone_number)
-        user = User(username=username, password=password, email=email, phone_number=phone_number)
+        user = User(
+            username=username, password=password, email=email, phone_number=phone_number
+        )
         db.session.add(user)
         db.session.commit()
-        
+
         return jsonify(user.to_dict()), 200
     except ValueError as e:
         print(e)

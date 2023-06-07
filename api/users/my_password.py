@@ -1,1 +1,1 @@
-my_login_password = 'rxirxxtccorvsmua'
+my_login_password = "rxirxxtccorvsmua"

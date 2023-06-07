@@ -19,8 +19,7 @@ import jwt
 
 
 class User(db.Model, UserMixin):
-    __tablename__='users'
-    
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
@@ -29,7 +28,6 @@ class User(db.Model, UserMixin):
     phone_number = db.Column(db.String(20), nullable=False)
 
     otp_secret = db.Column(db.String(16), nullable=False, default=secrets.token_hex(16))
-
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -45,8 +43,8 @@ class User(db.Model, UserMixin):
         self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)    
-    
+        return check_password_hash(self.password_hash, password)
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -54,5 +52,3 @@ class User(db.Model, UserMixin):
             "email": self.email,
             "phone_number": self.phone_number,
         }
-
-    

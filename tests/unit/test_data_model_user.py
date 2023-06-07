@@ -1,13 +1,14 @@
-'''
+"""
 Unit test to test the User model
-'''
+"""
 
 import pytest
 from api import db
 from api.data_model import User
 from sqlalchemy.exc import IntegrityError
 
-@pytest.mark.parametrize('users', ['success'])
+
+@pytest.mark.parametrize("users", ["success"])
 def test_new_user(users_fixture, users):
     """
     GIVEN a User model
@@ -16,20 +17,29 @@ def test_new_user(users_fixture, users):
     """
     data = users_fixture[users]
     user = User(
-        username=data['username'],
+        username=data["username"],
         password=data["password"],
         email=data["email"],
         phone_number=data["phone_number"],
     )
-    assert user.username == data['username']
-    assert user.password_hash != data['password']
-    assert user.email == data['email']
-    assert user.phone_number == data['phone_number']
+    assert user.username == data["username"]
+    assert user.password_hash != data["password"]
+    assert user.email == data["email"]
+    assert user.phone_number == data["phone_number"]
     assert user.otp_secret is not None
 
+
 @pytest.mark.xfail(raises=IntegrityError)
-@pytest.mark.parametrize('users', ['null_username', 'null_email', 'null_phone_number',
-                                   'non_unique_email', 'non_unique_username'])
+@pytest.mark.parametrize(
+    "users",
+    [
+        "null_username",
+        "null_email",
+        "null_phone_number",
+        "non_unique_email",
+        "non_unique_username",
+    ],
+)
 def test_new_user_raises_error(users_fixture, users, test_client):
     """
     GIVEN a User model
@@ -39,7 +49,7 @@ def test_new_user_raises_error(users_fixture, users, test_client):
     data = users_fixture[users]
     with test_client.application.app_context():
         user = User(
-            username=data['username'],
+            username=data["username"],
             password=data["password"],
             email=data["email"],
             phone_number=data["phone_number"],
@@ -47,11 +57,12 @@ def test_new_user_raises_error(users_fixture, users, test_client):
         db.session.add(user)
         try:
             db.session.commit()
-            
+
         except IntegrityError:
             db.session.rollback()
-   
-@pytest.mark.parametrize('users', ['success'])
+
+
+@pytest.mark.parametrize("users", ["success"])
 def test_password_hashing(users_fixture, users):
     """
     GIVEN a User model
@@ -60,14 +71,15 @@ def test_password_hashing(users_fixture, users):
     """
     data = users_fixture[users]
     user = User(
-        username=data['username'],
+        username=data["username"],
         password=data["password"],
         email=data["email"],
         phone_number=data["phone_number"],
     )
-    assert user.password_hash != data['password']
+    assert user.password_hash != data["password"]
 
-@pytest.mark.parametrize('users', ['success'])
+
+@pytest.mark.parametrize("users", ["success"])
 def test_password_verification(users_fixture, users):
     """
     GIVEN a User model
@@ -76,14 +88,15 @@ def test_password_verification(users_fixture, users):
     """
     data = users_fixture[users]
     user = User(
-        username=data['username'],
+        username=data["username"],
         password=data["password"],
         email=data["email"],
         phone_number=data["phone_number"],
     )
-    assert user.verify_password(data['password']) is True
+    assert user.verify_password(data["password"]) is True
 
-@pytest.mark.parametrize('users', ['success'])
+
+@pytest.mark.parametrize("users", ["success"])
 def test_password_salts_are_random(users_fixture, users):
     """
     GIVEN a User model
@@ -92,20 +105,16 @@ def test_password_salts_are_random(users_fixture, users):
     """
     data = users_fixture[users]
     user_one = User(
-        username=data['username'],
+        username=data["username"],
         password=data["password"],
         email=data["email"],
         phone_number=data["phone_number"],
     )
     user_two = User(
-        username=data['username'],
+        username=data["username"],
         password=data["password"],
         email=data["email"],
         phone_number=data["phone_number"],
     )
-    
+
     assert user_one.password_hash != user_two.password_hash
-
-
-
-
