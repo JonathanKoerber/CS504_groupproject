@@ -3,15 +3,16 @@ multi-authentication email to the user.
 the user will simultaneously receive a text message and an email
 bearing the same 4 digit pin that will be randomly generated.
 """
-from api.data_model import User
-from flask_mail import Message
-import random
 import re
-import os
+from api.data_model import User
+
 
 
 def salt_password(password):
+    """
+    salt password to create added complexity
     # for every 2 characters, insert #!
+    """
     iterations = 0
     password_array = []
     for char in password:
@@ -22,11 +23,17 @@ def salt_password(password):
     return "".join(password_array)
 
 def unser_name_unqiue(username):
+    """
+    check that username is not taken
+    """
     if User.query.filter_by(username=username).first():
         raise ValueError("Username already exists!")
     return True
 
 def validate_name(string):
+    """
+    check that username is not longer then 255
+    """
     if len(string) <= 255:
         return True
     else:
@@ -34,6 +41,9 @@ def validate_name(string):
 
 
 def validate_passowrd(string):
+    """
+    check that password is longer then 8 characters and not longer then 255
+    """
     if len(string) <= 255 and len(string) >= 6:
         return True
     else:
@@ -44,11 +54,7 @@ def validate_passowrd(string):
 
 def validate_email(email):
     """
-    The local part and the domain name can contain one or more dots,
-    no two dots can appear consecutively the first and last characters
-    in the local part and in the domain name should not be dots.
-    :param email:
-    :return: True if the email meets the standards of an approved email address.
+    check that email in in corect form.
     """
     pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     match = re.match(pattern, email)
@@ -58,8 +64,10 @@ def validate_email(email):
         raise ValueError("Invalid email address!")
 
 def validate_phone_number(number):
-    '''Patter should be 
-    1 (555) 555-5555  '''
+    """
+    check that phone number in in corect form.
+    1 (234) 567-8910
+    """
     pattern = r"^\d{1} \(\d{3}\) \d{3}-\d{4}$"
     match = re.match(pattern, number)
     if match:   

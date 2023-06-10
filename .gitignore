@@ -66,17 +66,17 @@ orange_it/static/profile_pics/*
 *.swp
 
 # stoage file for mysql db in condainer.
-/storage/*
+storage/*
 
 # test file that gets created when run docker compose
 /test/*
 # environ file var
 .env
 
-/docker-data
+docker-data/*
 
-/report
+report/*
 
-/instance/*
+instance/*
 
 .vscode/*

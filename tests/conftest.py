@@ -1,35 +1,13 @@
 import pytest
 from api import create_app, db
 from api.config import TestingConfig
-from flask_sqlalchemy import SQLAlchemy
-from flask import Flask
-from api.users.routes import users
-
-
-@pytest.fixture(scope="module")
-def context():
-    flask_app = create_app(TestingConfig)
-    db.create_all()
-    testing_client = flask_app.test_client()
-    ctx = flask_app.app_context()
-    ctx.push()
-    yield ctx
-    ctx.pop()
-    db.drop_all()
-
-
-@pytest.fixture
-def test_app():
-    app = create_app(TestingConfig)
-    db.create_all()
-    with app.test_client() as test_client:
-        with app.app_context():
-            yield test_client, db
-            db.drop_all()
 
 
 @pytest.fixture(scope="module")
 def test_client():
+    """
+    Flask provides a way to test your application by exposing the Werkzeug test Client
+    """
     app = create_app(TestingConfig)
     with app.app_context():
         client = app.test_client()
@@ -40,6 +18,9 @@ def test_client():
 
 @pytest.fixture(scope="module")
 def users_fixture():
+    """
+    Fixture to test the User model
+    """
     users = {
         "success": {
             "username": "testuser",
@@ -96,24 +77,36 @@ def users_fixture():
 
 @pytest.fixture(scope="module")
 def email_fixture():
+    """
+    Fixture to test the email validation
+    """
     emails = {"success": {"email": "jello@mail.com", "result": True}}
     return emails
 
 
 @pytest.fixture(scope="module")
 def email_value_error_fixture():
+    """
+    Fixture to test the email validation
+    """
     emails = {"null_email": {"email": ""}, "invalid_email": {"email": "jellomailcom"}}
     return emails
 
 
 @pytest.fixture(scope="module")
 def phone_fixture():
+    """
+    Fixture to test the phone number validation
+    """
     num = {"success": {"phone_number": "1 (555) 555-5555", "result": True}}
     return num
 
 
 @pytest.fixture(scope="module")
 def phone_value_error_fixture():
+    """
+    Fixture to test the phone number validation
+    """
     num = {
         "null_phone_number": {"phone_number": ""},
         "missing_space": {"phone_number": "1(123)456-7890"},
@@ -126,6 +119,9 @@ def phone_value_error_fixture():
 
 @pytest.fixture(scope="module")
 def name_fixture():
+    """
+    Fixture to test the name validation
+    """
     names = {
         "success": {"name": "Atestname", "result": True, "db_return": None},
     }
@@ -134,6 +130,9 @@ def name_fixture():
 
 @pytest.fixture(scope="module")
 def name_value_error_fixture():
+    """
+    Fixture to test the name validation
+    """
     names = {
         "name_exists": {"name": "Atestname", "result": False, "db_return": {}},
         "name_too_long": {"name": "Atestname" * 10, "result": False, "db_return": {}},
@@ -143,6 +142,9 @@ def name_value_error_fixture():
 
 @pytest.fixture(scope="module")
 def get_response_fixture():
+    """
+    Fixture to test the get response
+    """
     rec = {
         "success": {
             "route": "/",
@@ -157,6 +159,10 @@ def get_response_fixture():
 
 @pytest.fixture(scope="module")
 def users_to_load():
+    """
+    
+    fixture to load users into the database
+    """
     data = [
         {
             "username": "test user one",
@@ -182,6 +188,9 @@ def users_to_load():
 
 @pytest.fixture(scope="module")
 def username_password():
+    """
+    Fixture to test the username and password validation    
+    """
     data = {
         "wrong_password": {
             "body": {
@@ -213,6 +222,9 @@ def username_password():
 
 @pytest.fixture(scope="module")
 def update_user_fixture():
+    """
+    Fixture to test the update user endpoint
+    """
     data = {
         "user1": {
             "username": "user",
@@ -232,6 +244,9 @@ def update_user_fixture():
 
 @pytest.fixture(scope="module")
 def delete_user_fixture():
+    """
+    Fixture to test the delete user endpoint
+    """
     data = {
         "user1": {
             "username": "user delete",
@@ -250,6 +265,9 @@ def delete_user_fixture():
 
 @pytest.fixture(scope="module")
 def create_user_fixture():
+    """
+    Fixture to test the create user endpoint
+    """
     data = {    
         "user1": {
             "username": "user create",

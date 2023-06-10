@@ -1,8 +1,13 @@
+"""
+This module contains classes used to share the configurations for the application
+"""
 import secrets
 import os
 
-
 class Config(object):
+    """
+    Common configurations bass class
+    """
     DEBUG = False
     TESTING = False
     SECRET_KEY = secrets.token_hex(16)
@@ -22,11 +27,17 @@ class Config(object):
 
 
 class DevelopmentConfig(Config):
+    """
+    Development configurations
+    """
     DEBUG = True
     TESTING = False
 
 
 class TestingConfig(Config):
+    """
+    Testing configurations
+    """
     # SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     SQLALCHEMY_DATABASE_URI = "sqlite:///test.db"
     SQLALCHEMY_DATABASE_PASSWORD = "root"
@@ -36,4 +47,7 @@ class TestingConfig(Config):
 
 
 class DeployMentConfig(Config):
+    """
+    Deployment configurations
+    """
     pass

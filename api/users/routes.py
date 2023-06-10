@@ -1,16 +1,18 @@
+"""
+difine all the routes for the users
+"""
 import sqlalchemy
-from sqlalchemy import create_engine, text
 from flask import Blueprint, request, jsonify
+from api import db
 from api.users.utils import (
     validate_name,
     validate_passowrd,
     validate_email,
     validate_phone_number,
 )
-from api import db
 from api.data_model import User
 from api.users.mfa import request_verification_token, check_verification_token
-import os
+
 
 users = Blueprint("users", __name__)
 
@@ -21,9 +23,12 @@ Display all users
 
 @users.route("/")
 def index():
-    users = User.query.all()
-    users = [user.to_dict() for user in users]  # convert to dict
-    return jsonify(users), 200
+    """
+    Returns all users
+    """
+    current_users = User.query.all()
+    current_users = [user.to_dict() for user in current_users]  # convert to dict
+    return jsonify(current_users), 200
 
 
 @users.route("/login", methods=["GET"])
@@ -59,15 +64,11 @@ def login():
     )
 
 
-"""
-verify user pin and token
-TODO need a way to verify the pin
-maybe a temporary storage for the pin
-"""
-
-
 @users.route("/login_mfa", methods=["GET"])
 def login_mfa():
+    """
+    Authenticate user return pin and sent email for verification
+    """
     rsp = request.get_json()
     pin = rsp["pin"]
     username = rsp["username"]
@@ -77,11 +78,9 @@ def login_mfa():
     try:
         mfa_rsp = check_verification_token(user.phone_number, pin)
 
-    except ValueError as e:
-        print("error check verification token", e)
-        return jsonify({"error": str(e)}), 400
-    print("mfa_rsp: ", mfa_rsp)
-    print("mfa_rsp: ", mfa_rsp.status)
+    except ValueError as value_error:
+        print("error check verification token", value_error)
+        return jsonify({"error": str(value_error)}), 400
     if mfa_rsp == "approved":
         return (
             jsonify({"message": "Login successful", "id": user.id, "user": username}),
@@ -99,18 +98,16 @@ def login_mfa():
     return jsonify({"message": "Login pin verification failed try to login again"}), 400
 
 
-"""
-Add user to database
-"""
-
-
 @users.route("/users", methods=["POST"])
 def post_users_details():
-    re = request.get_json()
-    username = re["username"]
-    password = re["password"]
-    phone_number = re["phone_number"]
-    email = re["email"]
+    """
+    Add user to database
+    """
+    user_request = request.get_json()
+    username = user_request["username"]
+    password = user_request["password"]
+    phone_number = user_request["phone_number"]
+    email = user_request["email"]
     try:
         user = User.query.filter_by(username=username).first()
         if user:
@@ -126,30 +123,25 @@ def post_users_details():
         db.session.commit()
 
         return jsonify(user.to_dict()), 200
-    except ValueError as e:
-        print(e)
-        return jsonify({"error": str(e)}), 400
-    except sqlalchemy.exc.SQLAlchemyError as e:
-        print(e)
-        return jsonify({"error": str(e)}), 400
-    except Exception as e:
-        print(e)
-        return jsonify({"error": str(e)}), 400
-
-
-"""
-Update user to database
-"""
+    except ValueError as value_error:
+        print(value_error)
+        return jsonify({"error": str(value_error)}), 400
+    except sqlalchemy.exc.SQLAlchemyError as value_error:
+        print(value_error)
+        return jsonify({"error": str(value_error)}), 400
 
 
 @users.route("/users/", methods=["PUT"])
 def put_users_by_id_details():
-    re = request.get_json()
-    id = re["id"]
-    username = re["username"]
-    password = re["password"]
-    email = re["email"]
-    phone_number = re["phone_number"]
+    """
+    Update user details
+    """
+    user_request = request.get_json()
+    user_id = user_request["id"]
+    username = user_request["username"]
+    password = user_request["password"]
+    email = user_request["email"]
+    phone_number = user_request["phone_number"]
 
     try:
         validate_email(email)
@@ -157,7 +149,7 @@ def put_users_by_id_details():
         validate_passowrd(password)
         validate_phone_number(phone_number)
 
-        user = User.query.filter_by(id=id).first()
+        user = User.query.filter_by(id=user_id).first()
         if not user:
             raise ValueError("User does not exist")
         user.password = password if password else user.password
@@ -167,42 +159,38 @@ def put_users_by_id_details():
 
         db.session.add(user)
         db.session.commit()
-        update_user = User.query.filter_by(id=id).first()
-        print("update_user: ", update_user)
+        update_user = User.query.filter_by(id=user_id).first()
         return update_user.to_json(), 200
-    except Exception as e:
-        print("Error during saving object ", e)
-        return "Failed", 400
-
-
-"""
-Delete user from database
-"""
+    except ValueError as value_error:
+        print(value_error)
+        return jsonify({"error": str(value_error)}), 400
+    except sqlalchemy.exc.SQLAlchemyError as sql_error:
+        print(sql_error)
+        return jsonify({"error": str(sql_error)}), 400
 
 
 @users.route("/users/", methods=["DELETE"])
 def delete_users():
-    re = request.get_json()
-    id = username = None
-    print(re)
-    if "id" in re:
-        id = re["id"]
-    if "username" in re:
-        username = re["username"]
+    """
+    Delete user by id or username
+    """
+    user_request = request.get_json()
+    user_id = username = None
+    if "id" in user_request:
+        user_id = user_request["id"]
+    if "username" in user_request:
+        username = user_request["username"]
 
     try:
         if username:
             user = User.query.filter_by(username=username).first()
-        if id:
-            user = User.query.filter_by(id=id).first()
+        if user_id:
+            user = User.query.filter_by(id=user_id).first()
         if not user:
             raise ValueError("User does not exist")
         db.session.delete(user)
         db.session.commit()
         return "Success", 200
-    except sqlalchemy.exc.SQLAlchemyError as e:
-        print(e)
-        return jsonify({"error": str(e)}), 400
-    except Exception as e:
-        print(e)
-        return jsonify({"error": str(e)}), 400
+    except sqlalchemy.exc.SQLAlchemyError as sql_error:
+        return jsonify({"error": str(sql_error)}), 400
+

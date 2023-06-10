@@ -3,9 +3,9 @@ Unit test to test the User model
 """
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 from api import db
 from api.data_model import User
-from sqlalchemy.exc import IntegrityError
 
 
 @pytest.mark.parametrize("users", ["success"])
@@ -43,7 +43,8 @@ def test_new_user(users_fixture, users):
 def test_new_user_raises_error(users_fixture, users, test_client):
     """
     GIVEN a User model
-    WHEN a new User is created with a null username, password, email, phone_number, or non-unique username or email
+    WHEN a new User is created with a null username, password, email, phone_number, 
+    or non-unique username or email
     THEN check that an error is raised
     """
     data = users_fixture[users]
